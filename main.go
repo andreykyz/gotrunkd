@@ -7,36 +7,25 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"strconv"
 )
 
 func main() {
-	var isServer bool
-	var port int
-	flag.BoolVar(&isServer, "server", false, "Run as server")
-	flag.IntVar(&port, "port", 5000, "Port number")
+	connectInfo := new(ConnectInfo)
+	flag.BoolVar(connectInfo.isServer, "server", false, "Run as server")
+	flag.IntVar(connectInfo.port, "port", 5000, "Port number")
 	flag.Parse()
-	addr := net.ParseIP(flag.Arg(0))
-	if addr == nil {
+	connectInfo.addr := net.ParseIP(flag.Arg(0))
+	if connectInfo.addr == nil {
 		fmt.Println("Invalid address")
 		os.Exit(0)
 	} else {
-		fmt.Println("The address is ", addr.String())
+		fmt.Println("The address is ", connectInfo.addr.String())
 	}
-	println(isServer, port)
+	println(connectInfo.isServer, connectInfo.port)
 
 	if isServer {
-
+		server(connectInfo)
 	} else {
-		go client()
-		conn, err := net.Dial("tcp", addr+":"+strconv.Itoa(port))
-		checkError(err)
-	}
-}
-
-func checkError(err error) {
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Fatal error ", err.Error())
-		os.Exit(1)
+		client(connectInfo)
 	}
 }
