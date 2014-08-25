@@ -3,27 +3,26 @@ package main
 
 import (
 	//	"code.google.com/p/tuntap"
+	"code.google.com/p/goconf/conf"
 	"flag"
-	"fmt"
+	_ "fmt"
 	"net"
-	"os"
+	_ "os"
 )
 
 func main() {
 	connectInfo := new(ConnectInfo)
-	flag.BoolVar(connectInfo.isServer, "server", false, "Run as server")
-	flag.IntVar(connectInfo.port, "port", 5000, "Port number")
+	// comand line parse
+	flag.BoolVar(&connectInfo.isServer, "server", false, "Run as server")
+	flag.IntVar(&connectInfo.port, "port", 5000, "Port number")
 	flag.Parse()
-	connectInfo.addr := net.ParseIP(flag.Arg(0))
-	if connectInfo.addr == nil {
-		fmt.Println("Invalid address")
-		os.Exit(0)
-	} else {
-		fmt.Println("The address is ", connectInfo.addr.String())
-	}
-	println(connectInfo.isServer, connectInfo.port)
+	connectInfo.addr = net.ParseIP(flag.Arg(0)).String()
 
-	if isServer {
+	println(connectInfo.isServer, connectInfo.addr, ":", connectInfo.port)
+	// config file parse
+	c, err := conf.ReadConfigFile("something.config")
+	//	c.
+	if connectInfo.isServer {
 		server(connectInfo)
 	} else {
 		client(connectInfo)

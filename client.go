@@ -3,12 +3,12 @@ package main
 
 import (
 	"net"
-	//	"os"
+	_ "os"
 	"strconv"
-	//	"unsafe"
+	_ "unsafe"
 )
 
-func client(connectInfo ConnectInfo) {
+func client(connectInfo *ConnectInfo) {
 	var len int
 	conn, err := net.Dial("tcp", connectInfo.addr+":"+strconv.Itoa(connectInfo.port))
 	checkError(err)
