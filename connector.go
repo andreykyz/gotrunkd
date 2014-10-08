@@ -16,6 +16,7 @@ type TrunkData struct {
 	tun          string
 	ipFrom       string
 	ipTo         string
+	logger       *syslog.Writer
 }
 type LogicTunnel struct {
 	port int

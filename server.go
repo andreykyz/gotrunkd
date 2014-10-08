@@ -2,16 +2,18 @@
 package main
 
 import (
+	"fmt"
 	"net"
-	"strconv"
 )
 
 func server(connectInfo *ConnectInfo) {
 	var len int
 	var err error
 	var mytrunkData TrunkData
-	listener, err := net.Listen("tcp", ":"+strconv.Itoa(connectInfo.port))
-	checkError(err)
+	errorHandler := ErrorHandler{connectInfo.logger}
+	connectInfo.logger.Info(fmt.Sprintf("Listening %d", connectInfo.port))
+	listener, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", connectInfo.port))
+	errorHandler.checkError(err)
 	for {
 		conn, err := listener.Accept()
 		go func(conn net.Conn) {
@@ -20,7 +22,7 @@ func server(connectInfo *ConnectInfo) {
 			stage := ST_HOST
 			for {
 				len, err = conn.Read(b)
-				checkError(err)
+				errorHandler.checkError(err)
 				println(string(b[0:10]))
 				if err != nil {
 					break
@@ -31,7 +33,7 @@ func server(connectInfo *ConnectInfo) {
 						tmpString := string(b[5:])
 						_, ok := connectInfo.trunkData[tmpString]
 						if ok == false {
-							println("Bad client")
+							connectInfo.logger.Err("Bad client")
 							break
 						}
 						mytrunkData := connectInfo.trunkData[tmpString]
@@ -41,7 +43,7 @@ func server(connectInfo *ConnectInfo) {
 						continue
 					}
 					if string(b[0:5]) != "HOST:" {
-						println("D_NOHOST")
+						connectInfo.logger.Err("D_NOHOST")
 						return
 					}
 
@@ -53,7 +55,7 @@ func server(connectInfo *ConnectInfo) {
 						continue
 					}
 					if string(b[0:5]) != "CHAL:" {
-						println("D_PWD")
+						connectInfo.logger.Err("D_PWD")
 						break
 					}
 				case ST_PROT:
