@@ -3,6 +3,7 @@ package main
 
 import (
 	"log/syslog"
+	"net"
 )
 
 type TrunkData struct {
@@ -11,7 +12,7 @@ type TrunkData struct {
 	password     string
 	compressType string
 	name         string
-	conn         []LogicTunnel
+	logicTunnel  []LogicTunnel
 	connAmount   int
 	tun          string
 	ipFrom       string
@@ -20,6 +21,7 @@ type TrunkData struct {
 }
 type LogicTunnel struct {
 	port int
+	conn net.Conn
 }
 
 type ConnectInfo struct {

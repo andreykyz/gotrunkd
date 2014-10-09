@@ -23,8 +23,12 @@ func main() {
 	flag.Parse()
 	flag.Parsed()
 	connectInfo.addr = net.ParseIP(flag.Arg(0)).String()
-
-	connectInfo.logger, err = syslog.New(syslog.LOG_WARNING|syslog.LOG_INFO|syslog.LOG_DEBUG, "gotrunk")
+	if connectInfo.isServer {
+		connectInfo.logger, err = syslog.New(syslog.LOG_WARNING|syslog.LOG_INFO|syslog.LOG_DEBUG, "gotrunk server")
+	}
+	if !connectInfo.isServer {
+		connectInfo.logger, err = syslog.New(syslog.LOG_WARNING|syslog.LOG_INFO|syslog.LOG_DEBUG, "gotrunk")
+	}
 	errorHandler := ErrorHandler{connectInfo.logger}
 	errorHandler.checkError(err)
 	// config file parse

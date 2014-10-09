@@ -13,9 +13,7 @@ type ErrorHandler struct {
 
 func (errorHandler *ErrorHandler) checkError(err error) {
 	if err != nil {
-		//		errorHandler.logger.
-		fmt.Fprintf(os.Stderr, "Fatal error ", err.Error())
-		fmt.Fprintf(os.Stderr, "\n")
+		errorHandler.logger.Err(fmt.Sprintf("Fatal error: %s", err.Error()))
 		os.Exit(1)
 	}
 }

@@ -15,29 +15,34 @@ func server(connectInfo *ConnectInfo) {
 	listener, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", connectInfo.port))
 	errorHandler.checkError(err)
 	for {
+		connectInfo.logger.Info("Waiting for clients...")
 		conn, err := listener.Accept()
+		connectInfo.logger.Info("Got some")
 		go func(conn net.Conn) {
-			b := make([]byte, 50)
+			b := make([]byte, 100)
 			len, err = conn.Write([]byte(connectInfo.title))
 			stage := ST_HOST
 			for {
 				len, err = conn.Read(b)
 				errorHandler.checkError(err)
-				println(string(b[0:10]))
+				connectInfo.logger.Info((string(b[0:len])))
 				if err != nil {
 					break
 				}
 				switch stage {
 				case ST_HOST:
 					if string(b[0:5]) == "HOST:" {
-						tmpString := string(b[5:])
-						_, ok := connectInfo.trunkData[tmpString]
+						var ok bool
+						tmpString := string(b[5:len])
+						connectInfo.logger.Debug(string(b[0:len]))
+						_, ok = connectInfo.trunkData[tmpString]
+						println(ok)
 						if ok == false {
-							connectInfo.logger.Err("Bad client")
-							break
+							connectInfo.logger.Err(fmt.Sprintf("Bad client: %s", tmpString))
+							//	break
 						}
 						mytrunkData := connectInfo.trunkData[tmpString]
-						mytrunkData.name = tmpString
+						println(mytrunkData.ipFrom)
 						conn.Write([]byte("HOST OK"))
 						stage = ST_CHAL
 						continue
@@ -49,27 +54,33 @@ func server(connectInfo *ConnectInfo) {
 
 				case ST_CHAL:
 					if string(b[0:5]) == "CHAL:" {
-						mytrunkData.password = string(b[5:])
+						if mytrunkData.password != string(b[5:len]) {
+							connectInfo.logger.Err("Password incorrect")
+							break
+						}
 						conn.Write([]byte("CHAL OK"))
 						stage = ST_PROT
 						continue
 					}
 					if string(b[0:5]) != "CHAL:" {
-						connectInfo.logger.Err("D_PWD")
+						connectInfo.logger.Err("Password expected")
 						break
 					}
 				case ST_PROT:
 					if string(b[0:5]) == "PROT:" {
 						connectInfo.protocol = string(b[5:7])
-						conn.Write([]byte("PROT OK"))
 						stage = ST_TRUNK
-						continue
+						break
 					}
-
-				case ST_TRUNK:
-
 				}
 			}
+			listener, err := net.Listen(connectInfo.protocol, "")
+			errorHandler.checkError(err)
+			conn.Write([]byte("PROT OK"))
+			connectInfo.logger.Info("udp accept")
+			mytrunkData.logicTunnel[0].conn, err = listener.Accept()
+			errorHandler.checkError(err)
+			connectInfo.logger.Info("udp accepted")
 
 		}(conn)
 	}
