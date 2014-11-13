@@ -107,6 +107,9 @@ func FD_ZERO(p *syscall.FdSet) {
 	}
 }
 
+type LocalData struct {
+}
+
 func (connectInfo *ConnectInfo) trunk(trunkName string) {
 	var err error
 	running := 1

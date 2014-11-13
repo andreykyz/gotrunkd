@@ -1,34 +1,6 @@
 // queueRing.go
 package main
 
-import (
-	"encoding/binary"
-	"time"
-)
-
-const (
-	ETH_MTU         = 1500
-	UDP_HEADER      = 20
-	GOTRUNK_HEADER  = 6
-	GOTRUNK_FRAME   = ETH_MTU - (UDP_HEADER + GOTRUNK_HEADER)
-	RINGBUFFER_SIZE = 2000
-)
-
-const (
-	DUP_FRAME = iota
-	NORMAL
-	BIG_LOSS
-	RINGBUFFER_OVERFLOW
-)
-
-type FramePacket struct {
-	seq_num   uint32
-	len       int
-	trunk     int
-	timeStamp time.Time
-	packet    [GOTRUNK_FRAME]byte
-}
-
 /*
 	Ring Buffer
 
@@ -62,8 +34,9 @@ func (ringBuffer *RingBuffer) add(packet []byte, len int, trunk int) int {
 	case seqPointer >= ringBuffer.size:
 		seqPointer = seqPointer - ringBuffer.size
 	}
-	if seqPointer >= ringBuffer.head {
-		retValue = RINGBUFFER_OVERFLOW
+
+	if seqPointer >= ringBuffer.head { //todo fixme detect overflow with ring
+		//		retValue = RINGBUFFER_OVERFLOW
 	}
 
 	if ringBuffer.frame[seqPointer].len != 0 {
@@ -74,4 +47,11 @@ func (ringBuffer *RingBuffer) add(packet []byte, len int, trunk int) int {
 	ringBuffer.frame[seqPointer].len = len
 	ringBuffer.frame[seqPointer].trunk = trunk
 	return retValue
+}
+
+func (ringBuffer *RingBuffer) getWaitData(lastWrittenSeq int) bool {
+	if lastWrittenSeq+1 == ringBuffer.head {
+		return true
+	}
+	return false
 }
