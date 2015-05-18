@@ -1,6 +1,10 @@
 // queueRing.go
 package main
 
+import (
+	"encoding/binary"
+)
+
 /*
 	Ring Buffer
 
